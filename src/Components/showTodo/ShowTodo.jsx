@@ -1,5 +1,5 @@
 import "./showTodo.css";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const listOfType = [
   "Must Do",
@@ -11,6 +11,8 @@ const listOfType = [
   "default",
 ];
 
+let touchY = 0;
+
 const listHandelingType = ["Must Do", "Should Do", "Could Do", "If I Have Time", "none"];
 
 //* eslint-disable react/prop-types */
@@ -21,6 +23,9 @@ const Showodo = ({ data, dispatch }) => {
   const [current, setCurrent] = useState(0);
   const [next, setNext] = useState(false);
   const [elementOnDrag, setElementOnDrag] = useState("");
+  const [isDraggable, setIsDraggable] = useState(false);
+
+  const RefAllTodo = useRef([]);
 
   const handleDone = (id) => {
     dispatch({ type: "done", payload: id });
@@ -40,6 +45,9 @@ const Showodo = ({ data, dispatch }) => {
     setNext(false);
   };
 
+  const hadleDeleteAll = () => {
+    dispatch({ type: "deleteAll" });
+  };
   const handleCurrent = () => {
     setCurrent((prevCurent) => {
       const range = listHandelingType.length;
@@ -94,9 +102,47 @@ const Showodo = ({ data, dispatch }) => {
     dispatch({ type: "FinishDraging" });
   };
 
-  const hadleDeleteAll = () => {
-    dispatch({ type: "deleteAll" });
+  const handleTouchStart = (e, id) => {
+    if (isDraggable) {
+      setElementOnDrag(id);
+      touchY = e.touches[0].clientY;
+
+      RefAllTodo.current.forEach((el, index) => {
+        return id === index
+          ? el.classList.add("IamINDragMode")
+          : el.classList.remove("IamINDragMode");
+      });
+    }
   };
+
+  const handleTouchMove = (e) => {
+    touchY = e.touches[0].clientY;
+  };
+  const handleTouchEnd = (e) => {
+    const element = document.elementFromPoint(
+      e.changedTouches[0].clientX,
+      e.changedTouches[0].clientY
+    );
+
+    if (!element) return;
+
+    const targetElement = element.closest(".single-todo");
+    console.log(targetElement);
+
+    if (targetElement) {
+      const index = Number(targetElement.querySelector(".indexNumber")?.textContent) - 1;
+
+      if (index >= 0) {
+        dispatch({
+          type: "drop",
+          payload: { elementIsDrag: elementOnDrag, targetId: index },
+        });
+      }
+    }
+
+    FinishDrag();
+  };
+
   return (
     <div className="show-todo">
       <div className="classment">
@@ -123,6 +169,11 @@ const Showodo = ({ data, dispatch }) => {
                   onClick={() => {
                     setType(list);
                     handleClasment(list);
+                    if (list === "Draggable") {
+                      setIsDraggable(true);
+                    } else {
+                      setIsDraggable(false);
+                    }
                   }}>
                   {list}
                 </li>
@@ -136,11 +187,15 @@ const Showodo = ({ data, dispatch }) => {
           <div
             className={item.isDone ? "single-todo done" : `single-todo ${item.tasktype}`}
             key={index}
+            ref={(el) => (RefAllTodo.current[index] = el)}
             draggable={item.drag}
             onDragStart={(e) => handelDragStart(e, index)}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
-            onDrop={(e) => handleChangeElement(e, index)}>
+            onDrop={(e) => handleChangeElement(e, index)}
+            onTouchStart={(e) => handleTouchStart(e, index)}
+            onTouchMove={(e) => handleTouchMove(e)}
+            onTouchEnd={(e) => handleTouchEnd(e, index)}>
             {item.isEditing ? (
               <>
                 {next ? (
