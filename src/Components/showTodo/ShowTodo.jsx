@@ -11,8 +11,6 @@ const listOfType = [
   "default",
 ];
 
-let touchY = 0;
-
 const listHandelingType = ["Must Do", "Should Do", "Could Do", "If I Have Time", "none"];
 
 //* eslint-disable react/prop-types */
@@ -102,31 +100,31 @@ const Showodo = ({ data, dispatch }) => {
     dispatch({ type: "FinishDraging" });
   };
 
-  const handleTouchStart = (e, id) => {
+  const handleTouchPhone = (e, id) => {
     // first parent element
     const allElement = e.target.closest(".single-todo");
 
     if (!isDraggable) return;
     setElementOnDrag(id);
-
     const allHaveClass = RefAllTodo.current.some((el) => el.classList.contains("IamINDragMode"));
 
     if (!allHaveClass) {
       allElement.classList.add("IamINDragMode");
-      touchY = e.touches[0].clientY;
-      console.log(touchY);
     } else {
       RefAllTodo.current.forEach((el) => {
         if (el === allElement) {
           allElement.classList.remove("IamINDragMode");
+        } else {
+          dispatch({
+            type: "drop",
+            payload: { elementIsDrag: elementOnDrag, targetId: id },
+          });
+          RefAllTodo.current[elementOnDrag].classList.remove("IamINDragMode");
         }
       });
     }
   };
 
-  const handleTouchMove = (e) => {
-    touchY = e.touches[0].clientY;
-  };
   const handleTouchEnd = (e) => {
     if (!isDraggable) return;
     const element = document.elementFromPoint(
@@ -203,9 +201,7 @@ const Showodo = ({ data, dispatch }) => {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleChangeElement(e, index)}
-            onTouchStart={(e) => handleTouchStart(e, index)}
-            onTouchMove={(e) => handleTouchMove(e)}
-            onTouchEnd={(e) => handleTouchEnd(e, index)}>
+            onClick={(e) => handleTouchPhone(e, index)}>
             {item.isEditing ? (
               <>
                 {next ? (
