@@ -125,32 +125,6 @@ const Showodo = ({ data, dispatch }) => {
     }
   };
 
-  const handleTouchEnd = (e) => {
-    if (!isDraggable) return;
-    const element = document.elementFromPoint(
-      e.changedTouches[0].clientX,
-      e.changedTouches[0].clientY
-    );
-
-    if (!element) return;
-
-    const targetElement = element.closest(".single-todo");
-
-    if (targetElement) {
-      const index = RefAllTodo.current.indexOf(targetElement);
-      const draggedElement = RefAllTodo.current[elementOnDrag].classList.contains("IamINDragMode");
-
-      if (index >= 0 && draggedElement) {
-        dispatch({
-          type: "drop",
-          payload: { elementIsDrag: elementOnDrag, targetId: index },
-        });
-      }
-    }
-
-    FinishDrag();
-  };
-
   return (
     <div className="show-todo">
       <div className="classment">
