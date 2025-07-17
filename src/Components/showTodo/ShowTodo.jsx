@@ -103,14 +103,23 @@ const Showodo = ({ data, dispatch }) => {
   };
 
   const handleTouchStart = (e, id) => {
-    if (isDraggable) {
-      setElementOnDrag(id);
-      touchY = e.touches[0].clientY;
+    // first parent element
+    const allElement = e.target.closest(".single-todo");
 
-      RefAllTodo.current.forEach((el, index) => {
-        return id === index
-          ? el.classList.add("IamINDragMode")
-          : el.classList.remove("IamINDragMode");
+    if (!isDraggable) return;
+    setElementOnDrag(id);
+
+    const allHaveClass = RefAllTodo.current.some((el) => el.classList.contains("IamINDragMode"));
+
+    if (!allHaveClass) {
+      allElement.classList.add("IamINDragMode");
+      touchY = e.touches[0].clientY;
+      console.log(touchY);
+    } else {
+      RefAllTodo.current.forEach((el) => {
+        if (el === allElement) {
+          allElement.classList.remove("IamINDragMode");
+        }
       });
     }
   };
@@ -119,6 +128,7 @@ const Showodo = ({ data, dispatch }) => {
     touchY = e.touches[0].clientY;
   };
   const handleTouchEnd = (e) => {
+    if (!isDraggable) return;
     const element = document.elementFromPoint(
       e.changedTouches[0].clientX,
       e.changedTouches[0].clientY
@@ -127,10 +137,11 @@ const Showodo = ({ data, dispatch }) => {
     if (!element) return;
 
     const targetElement = element.closest(".single-todo");
-    console.log(targetElement);
 
     if (targetElement) {
-      const index = Number(targetElement.querySelector(".indexNumber")?.textContent) - 1;
+      const index = RefAllTodo.current.indexOf(targetElement);
+      //const index = Number(targetElement.querySelector(".indexNumber")?.textContent) - 1;
+      console.log(index);
 
       if (index >= 0) {
         dispatch({
