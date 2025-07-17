@@ -140,10 +140,9 @@ const Showodo = ({ data, dispatch }) => {
 
     if (targetElement) {
       const index = RefAllTodo.current.indexOf(targetElement);
-      //const index = Number(targetElement.querySelector(".indexNumber")?.textContent) - 1;
-      console.log(index);
+      const draggedElement = RefAllTodo.current[elementOnDrag].classList.contains("IamINDragMode");
 
-      if (index >= 0) {
+      if (index >= 0 && draggedElement) {
         dispatch({
           type: "drop",
           payload: { elementIsDrag: elementOnDrag, targetId: index },
